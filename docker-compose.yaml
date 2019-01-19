@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+    webserver:
+        build:
+            context: './nginx'
+            dockerfile: Dockerfile
+        ports:
+            - 80:80
+        external_links:
+            - hbase-master:hbase
+        # extra_hosts:
+        #     - "hbase:10.0.75.1"
+    # hbase:
+    #     build:
+    #         context: './hbase'
+    #         dockerfile: Dockerfile
+    #     image: harisekhon/hbase
+    #     network_mode: "service:webserver"
+    #     depends_on:
+    #         - webserver
+    
+    mysql:
+        image: mysql:5.7
+        network_mode: "service:webserver"
+        environment:
+            MYSQL_ROOT_PASSWORD: 443502355
+            MYSQL_DATABASE: myplant
+        depends_on:
+            - webserver
+        restart: always
+    
+    app:
+        build: 
+            context: ./app
+            dockerfile: Dockerfile
+        network_mode: "service:webserver"
+        depends_on:
+            - webserver
+            - mysql
+        environment:
+            TIME_ZONE: "Asia/Shanghai"
+            SPRING_PROFILES_ACTIVE: "mydocker"
+        restart: always
